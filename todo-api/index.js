@@ -133,6 +133,16 @@ app.delete('/categories/:id', (req, res) =>
     res.json({ id: req.params.id, message: 'Category deleted' });
 });
 
+// Add a PATCH endpoint to update a category by id
+app.patch('/categories/:id', (req, res) =>
+{
+    const idx = categories.findIndex(c => c.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'Category not found' });
+    const { name } = req.body;
+    if (name !== undefined) categories[idx].name = name;
+    res.json(categories[idx]);
+});
+
 app.listen(PORT, () =>
 {
     console.log(`Server running on port ${PORT}`);
