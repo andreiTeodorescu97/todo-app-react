@@ -22,6 +22,7 @@ public class AuthService
 
         var token = Guid.NewGuid();
         user.Token = token;
+        await _context.SaveChangesAsync();
         return token;
     }
 
