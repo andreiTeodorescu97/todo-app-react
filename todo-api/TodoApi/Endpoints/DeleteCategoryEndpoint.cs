@@ -21,7 +21,7 @@ public class DeleteCategoryEndpoint : EndpointWithoutRequest
     public override async Task HandleAsync(CancellationToken ct)
     {
         var id = Route<string>("id");
-        var deleted = _categoryService.DeleteCategory(id);
+        var deleted = await _categoryService.DeleteCategoryAsync(id);
         
         if (!deleted)
         {

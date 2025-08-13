@@ -36,7 +36,7 @@ public class CreateTodoEndpoint : Endpoint<CreateTodoRequest, Todo>
             return;
         }
 
-        var todo = _todoService.CreateTodo(userId, req.Name, req.Description, req.CategoryId);
+        var todo = await _todoService.CreateTodoAsync(userId, req.Name, req.Description, req.CategoryId);
         await SendAsync(todo, 201, cancellation: ct);
     }
 }

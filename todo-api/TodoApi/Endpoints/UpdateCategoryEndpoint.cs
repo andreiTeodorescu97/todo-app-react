@@ -28,7 +28,7 @@ public class UpdateCategoryEndpoint : Endpoint<UpdateCategoryRequest, Category>
     public override async Task HandleAsync(UpdateCategoryRequest req, CancellationToken ct)
     {
         var id = Route<string>("id");
-        var updatedCategory = _categoryService.UpdateCategory(id, req);
+        var updatedCategory = await _categoryService.UpdateCategoryAsync(id, req);
         
         if (updatedCategory == null)
         {

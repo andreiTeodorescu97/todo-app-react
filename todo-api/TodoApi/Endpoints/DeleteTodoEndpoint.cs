@@ -28,7 +28,7 @@ public class DeleteTodoEndpoint : EndpointWithoutRequest
         }
 
         var id = Route<string>("id");
-        var deleted = _todoService.DeleteTodo(id, userId);
+        var deleted = await _todoService.DeleteTodoAsync(id, userId);
         
         if (!deleted)
         {

@@ -24,7 +24,7 @@ public class LogoutEndpoint : EndpointWithoutRequest
         
         if (!string.IsNullOrEmpty(token))
         {
-            _authService.Logout(token);
+            await _authService.Logout(new Guid(token));
         }
 
         await SendOkAsync(new { message = "Logged out" }, ct);

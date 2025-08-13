@@ -34,7 +34,7 @@ public class CreateCategoryEndpoint : Endpoint<CreateCategoryRequest, Category>
             return;
         }
 
-        var category = _categoryService.CreateCategory(req.Name);
+        var category = await _categoryService.CreateCategoryAsync(req.Name);
         await SendAsync(category, 201, cancellation: ct);
     }
 }

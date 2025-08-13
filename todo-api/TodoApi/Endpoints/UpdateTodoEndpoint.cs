@@ -38,7 +38,7 @@ public class UpdateTodoEndpoint : Endpoint<UpdateTodoRequest, Todo>
         }
 
         var id = Route<string>("id");
-        var updatedTodo = _todoService.UpdateTodo(id, userId, req);
+        var updatedTodo = await _todoService.UpdateTodoAsync(id, userId, req);
         
         if (updatedTodo == null)
         {

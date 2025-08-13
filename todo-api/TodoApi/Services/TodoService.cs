@@ -1,23 +1,33 @@
 using TodoApi.Models;
 using TodoApi.Endpoints;
+using TodoApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace TodoApi.Services;
 
 public class TodoService
 {
-    private readonly List<Todo> _todos = new();
+    private readonly TodoDbContext _context;
 
-    public IEnumerable<Todo> GetTodosByUserId(string userId)
+    public TodoService(TodoDbContext context)
     {
-        return _todos.Where(t => t.UserId == userId);
+        _context = context;
     }
 
-    public Todo? GetTodoById(string id, string userId)
+    public async Task<IEnumerable<Todo>> GetTodosByUserIdAsync(string userId)
     {
-        return _todos.FirstOrDefault(t => t.Id == id && t.UserId == userId);
+        return await _context.Todos
+            .Where(t => t.UserId == userId)
+            .ToListAsync();
     }
 
-    public Todo CreateTodo(string userId, string name, string description, string categoryId)
+    public async Task<Todo?> GetTodoByIdAsync(string id, string userId)
+    {
+        return await _context.Todos
+            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+    }
+
+    public async Task<Todo> CreateTodoAsync(string userId, string name, string description, string categoryId)
     {
         var todo = new Todo
         {
@@ -31,13 +41,14 @@ public class TodoService
             DateCompleted = null
         };
 
-        _todos.Add(todo);
+        _context.Todos.Add(todo);
+        await _context.SaveChangesAsync();
         return todo;
     }
 
-    public Todo? UpdateTodo(string id, string userId, UpdateTodoRequest request)
+    public async Task<Todo?> UpdateTodoAsync(string id, string userId, UpdateTodoRequest request)
     {
-        var todo = GetTodoById(id, userId);
+        var todo = await GetTodoByIdAsync(id, userId);
         if (todo == null) return null;
 
         if (request.Name != null) todo.Name = request.Name;
@@ -49,14 +60,17 @@ public class TodoService
             todo.DateCompleted = request.Completed.Value ? DateTime.UtcNow : null;
         }
 
+        await _context.SaveChangesAsync();
         return todo;
     }
 
-    public bool DeleteTodo(string id, string userId)
+    public async Task<bool> DeleteTodoAsync(string id, string userId)
     {
-        var todo = GetTodoById(id, userId);
+        var todo = await GetTodoByIdAsync(id, userId);
         if (todo == null || todo.Completed) return false;
 
-        return _todos.Remove(todo);
+        _context.Todos.Remove(todo);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

@@ -5,17 +5,16 @@ namespace TodoApi.Middleware;
 public class AuthMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly AuthService _authService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public AuthMiddleware(RequestDelegate next, AuthService authService)
+    public AuthMiddleware(RequestDelegate next, IServiceScopeFactory scopeFactory)
     {
         _next = next;
-        _authService = authService;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Skip authentication for login endpoint
         if (context.Request.Path.StartsWithSegments("/login"))
         {
             await _next(context);
@@ -31,8 +30,10 @@ public class AuthMiddleware
         }
 
         var token = authHeader.Replace("Bearer ", "");
-        var userId = _authService.GetUserIdFromToken(token);
-        
+        using var scope = _scopeFactory.CreateScope();
+        var authService = scope.ServiceProvider.GetRequiredService<AuthService>();
+        var userId = await authService.GetUserIdFromToken(new Guid(token));
+
         if (string.IsNullOrEmpty(userId))
         {
             context.Response.StatusCode = 401;

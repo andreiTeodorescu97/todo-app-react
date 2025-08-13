@@ -1,33 +1,40 @@
-using TodoApi.Models;
+using Microsoft.EntityFrameworkCore;
+using TodoApi.Data;
 
 namespace TodoApi.Services;
 
 public class AuthService
 {
     private readonly Dictionary<string, string> _tokens = new(); // token: userId
-    private readonly List<User> _users = new()
-    {
-        new User { Id = "1", Username = "alice", Password = "password1" },
-        new User { Id = "2", Username = "bob", Password = "password2" }
-    };
+    private readonly TodoDbContext _context;
 
-    public string? AuthenticateUser(string username, string password)
+    public AuthService(TodoDbContext context)
     {
-        var user = _users.FirstOrDefault(u => u.Username == username && u.Password == password);
+        _context = context;
+    }
+
+    public async Task<Guid?> AuthenticateUserAsync(string username, string password)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
+        
         if (user == null) return null;
 
-        var token = Guid.NewGuid().ToString();
-        _tokens[token] = user.Id;
+        var token = Guid.NewGuid();
+        user.Token = token;
         return token;
     }
 
-    public string? GetUserIdFromToken(string token)
+    public async Task<string?> GetUserIdFromToken(Guid token)
     {
-        return _tokens.TryGetValue(token, out var userId) ? userId : null;
+        return (await _context.Users.FirstOrDefaultAsync(c => c.Token == token))?.Id;
     }
 
-    public void Logout(string token)
+    public async Task Logout(Guid token)
     {
-        _tokens.Remove(token);
+        var user = await _context.Users.FirstOrDefaultAsync(c => c.Token == token);
+        if (user == null) return;
+        user.Token = null;
+        await _context.SaveChangesAsync();
     }
 }

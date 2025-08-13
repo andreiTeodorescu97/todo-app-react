@@ -28,7 +28,7 @@ public class GetCategoriesEndpoint : EndpointWithoutRequest<IEnumerable<Category
             return;
         }
 
-        var categories = _categoryService.GetAllCategories();
+        var categories = await _categoryService.GetAllCategoriesAsync();
         await SendAsync(categories, cancellation: ct);
     }
 }

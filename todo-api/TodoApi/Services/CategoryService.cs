@@ -1,27 +1,30 @@
 using TodoApi.Models;
 using TodoApi.Endpoints;
+using TodoApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace TodoApi.Services;
 
 public class CategoryService
 {
-    private readonly List<Category> _categories = new()
-    {
-        new Category { Id = "cat1", Name = "Work", DateAdded = DateTime.UtcNow },
-        new Category { Id = "cat2", Name = "Personal", DateAdded = DateTime.UtcNow }
-    };
+    private readonly TodoDbContext _context;
 
-    public IEnumerable<Category> GetAllCategories()
+    public CategoryService(TodoDbContext context)
     {
-        return _categories;
+        _context = context;
     }
 
-    public Category? GetCategoryById(string id)
+    public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
     {
-        return _categories.FirstOrDefault(c => c.Id == id);
+        return await _context.Categories.ToListAsync();
     }
 
-    public Category CreateCategory(string name)
+    public async Task<Category?> GetCategoryByIdAsync(string id)
+    {
+        return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<Category> CreateCategoryAsync(string name)
     {
         var category = new Category
         {
@@ -30,24 +33,28 @@ public class CategoryService
             DateAdded = DateTime.UtcNow
         };
 
-        _categories.Add(category);
+        _context.Categories.Add(category);
+        await _context.SaveChangesAsync();
         return category;
     }
 
-    public Category? UpdateCategory(string id, UpdateCategoryRequest request)
+    public async Task<Category?> UpdateCategoryAsync(string id, UpdateCategoryRequest request)
     {
-        var category = GetCategoryById(id);
+        var category = await GetCategoryByIdAsync(id);
         if (category == null) return null;
 
         if (request.Name != null) category.Name = request.Name;
+        await _context.SaveChangesAsync();
         return category;
     }
 
-    public bool DeleteCategory(string id)
+    public async Task<bool> DeleteCategoryAsync(string id)
     {
-        var category = GetCategoryById(id);
+        var category = await GetCategoryByIdAsync(id);
         if (category == null) return false;
 
-        return _categories.Remove(category);
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

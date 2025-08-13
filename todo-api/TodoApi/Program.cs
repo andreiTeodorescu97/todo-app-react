@@ -1,6 +1,8 @@
 using FastEndpoints;
 using TodoApi.Services;
 using TodoApi.Middleware;
+using TodoApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,10 +13,15 @@ builder.Services.AddFastEndpoints();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add Entity Framework Core
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<TodoDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
 // Register application services
-builder.Services.AddSingleton<AuthService>();
-builder.Services.AddSingleton<TodoService>();
-builder.Services.AddSingleton<CategoryService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TodoService>();
+builder.Services.AddScoped<CategoryService>();
 
 // Add CORS
 builder.Services.AddCors(options =>

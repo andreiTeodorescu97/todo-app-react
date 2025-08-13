@@ -28,7 +28,7 @@ public class GetTodosEndpoint : EndpointWithoutRequest<IEnumerable<Todo>>
             return;
         }
 
-        var todos = _todoService.GetTodosByUserId(userId);
+        var todos = await _todoService.GetTodosByUserIdAsync(userId);
         await SendAsync(todos, cancellation: ct);
     }
 }

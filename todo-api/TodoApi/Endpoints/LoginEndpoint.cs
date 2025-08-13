@@ -12,7 +12,7 @@ public class LoginRequest
 
 public class LoginResponse
 {
-    public string Token { get; set; } = string.Empty;
+    public Guid Token { get; set; }
 }
 
 public class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
@@ -32,7 +32,7 @@ public class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
 
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
-        var token = _authService.AuthenticateUser(req.Username, req.Password);
+        var token = await _authService.AuthenticateUserAsync(req.Username, req.Password);
         
         if (token == null)
         {
@@ -40,6 +40,6 @@ public class LoginEndpoint : Endpoint<LoginRequest, LoginResponse>
             return;
         }
 
-        await SendAsync(new LoginResponse { Token = token }, cancellation: ct);
+        await SendAsync(new LoginResponse { Token = token.Value }, cancellation: ct);
     }
 }
